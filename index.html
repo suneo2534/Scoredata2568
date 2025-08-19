@@ -1,0 +1,2469 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการสารสนเทศปีการศึกษา 2568</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Space Background */
+        .space-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+        }
+        
+        /* Stars */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+        
+        .star:nth-child(odd) {
+            animation-delay: 1s;
+        }
+        
+        .star:nth-child(3n) {
+            animation-delay: 2s;
+        }
+        
+        /* Planets */
+        .planet {
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+        }
+        
+        .planet1 {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            top: 10%;
+            right: 10%;
+            animation: float 20s ease-in-out infinite;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+        }
+        
+        .planet2 {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+            bottom: 20%;
+            left: 5%;
+            animation: float 15s ease-in-out infinite reverse;
+            box-shadow: 0 0 25px rgba(116, 185, 255, 0.5);
+        }
+        
+        .planet3 {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #a29bfe, #6c5ce7);
+            top: 60%;
+            right: 20%;
+            animation: float 25s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(162, 155, 254, 0.5);
+        }
+        
+        /* Space Cards */
+        .space-card-1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .space-card-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(240, 147, 251, 0.37);
+        }
+        
+        .space-card-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(79, 172, 254, 0.37);
+        }
+        
+        .space-card-4 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(67, 233, 123, 0.37);
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .tab-active {
+            border-bottom: 3px solid #00d4ff;
+            color: #00d4ff;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+        
+        /* News Cards */
+        .news-card-1 {
+            background: linear-gradient(135deg, rgba(255, 182, 193, 0.3) 0%, rgba(255, 160, 160, 0.4) 100%);
+            border: 1px solid rgba(255, 182, 193, 0.3);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(255, 182, 193, 0.2), 0 0 15px rgba(255, 182, 193, 0.1);
+            animation: cardGlow 4s ease-in-out infinite alternate;
+        }
+        
+        .news-card-2 {
+            background: linear-gradient(135deg, rgba(173, 216, 230, 0.3) 0%, rgba(135, 206, 235, 0.4) 100%);
+            border: 1px solid rgba(173, 216, 230, 0.3);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(173, 216, 230, 0.2), 0 0 15px rgba(173, 216, 230, 0.1);
+            animation: cardGlow 4s ease-in-out infinite alternate;
+            animation-delay: -1s;
+        }
+        
+        .news-card-3 {
+            background: linear-gradient(135deg, rgba(144, 238, 144, 0.3) 0%, rgba(152, 251, 152, 0.4) 100%);
+            border: 1px solid rgba(144, 238, 144, 0.3);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(144, 238, 144, 0.2), 0 0 15px rgba(144, 238, 144, 0.1);
+            animation: cardGlow 4s ease-in-out infinite alternate;
+            animation-delay: -2s;
+        }
+        
+        .news-card-4 {
+            background: linear-gradient(135deg, rgba(221, 160, 221, 0.3) 0%, rgba(218, 112, 214, 0.4) 100%);
+            border: 1px solid rgba(221, 160, 221, 0.3);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(221, 160, 221, 0.2), 0 0 15px rgba(221, 160, 221, 0.1);
+            animation: cardGlow 4s ease-in-out infinite alternate;
+            animation-delay: -3s;
+        }
+        
+        .space-header {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
+            position: relative;
+            overflow: hidden;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+        }
+        
+        .space-bg-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.3;
+            z-index: 1;
+        }
+        
+        /* Nebula Effect */
+        .nebula {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.3;
+            animation: nebulaPulse 8s ease-in-out infinite;
+        }
+        
+        .nebula1 {
+            background: radial-gradient(circle, #ff6b6b, transparent);
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .nebula2 {
+            background: radial-gradient(circle, #74b9ff, transparent);
+            top: 50%;
+            right: 15%;
+            animation-delay: -3s;
+        }
+        
+        .nebula3 {
+            background: radial-gradient(circle, #a29bfe, transparent);
+            bottom: 20%;
+            left: 30%;
+            animation-delay: -6s;
+        }
+        
+        /* Shooting Stars */
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px white;
+            animation: shootingStar 3s linear infinite;
+        }
+        
+        .shooting-star::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50px;
+            height: 1px;
+            background: linear-gradient(90deg, white, transparent);
+            transform: translateX(-50px);
+        }
+        
+        .shooting-star1 {
+            top: 20%;
+            left: 100%;
+            animation-delay: 0s;
+        }
+        
+        .shooting-star2 {
+            top: 60%;
+            left: 100%;
+            animation-delay: -2s;
+        }
+        
+        .shooting-star3 {
+            top: 40%;
+            left: 100%;
+            animation-delay: -4s;
+        }
+        
+        .logo-glow {
+            position: relative;
+            z-index: 10;
+        }
+        
+        .logo-glow img {
+            filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.8)) 
+                    drop-shadow(0 0 40px rgba(0, 212, 255, 0.6))
+                    drop-shadow(0 0 60px rgba(0, 212, 255, 0.4));
+            animation: logoGlow 3s ease-in-out infinite alternate;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 10;
+        }
+        
+        .header-title {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 212, 255, 0.5);
+            animation: titleGlow 4s ease-in-out infinite alternate;
+        }
+        
+        /* Space Navigation */
+        .space-nav {
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+            backdrop-filter: blur(15px);
+        }
+        
+        .space-nav button {
+            transition: all 0.3s ease;
+        }
+        
+        .space-nav button:hover {
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+            transform: translateY(-2px);
+        }
+        
+        /* Space Buttons */
+        .space-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .space-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+        
+        /* Space Inputs */
+        .space-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+        
+        .space-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .space-input:focus {
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            outline: none;
+        }
+        
+        /* Animations */
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            25% { transform: translateY(-20px) translateX(10px); }
+            50% { transform: translateY(-10px) translateX(-10px); }
+            75% { transform: translateY(-30px) translateX(5px); }
+        }
+        
+        @keyframes nebulaPulse {
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.1); }
+        }
+        
+        @keyframes shootingStar {
+            0% { transform: translateX(0) translateY(0); opacity: 1; }
+            100% { transform: translateX(-1000px) translateY(500px); opacity: 0; }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 154, 158, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 154, 158, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 154, 158, 0); }
+        }
+        
+        @keyframes cardGlow {
+            0% { 
+                box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1), 0 0 20px rgba(255, 255, 255, 0.1);
+                transform: translateY(0px);
+            }
+            100% { 
+                box-shadow: 0 12px 40px rgba(255, 255, 255, 0.2), 0 0 30px rgba(255, 255, 255, 0.2);
+                transform: translateY(-2px);
+            }
+        }
+        
+        @keyframes logoGlow {
+            0% { 
+                filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.8)) 
+                        drop-shadow(0 0 40px rgba(0, 212, 255, 0.6))
+                        drop-shadow(0 0 60px rgba(0, 212, 255, 0.4));
+            }
+            100% { 
+                filter: drop-shadow(0 0 30px rgba(0, 212, 255, 1)) 
+                        drop-shadow(0 0 60px rgba(0, 212, 255, 0.8))
+                        drop-shadow(0 0 90px rgba(0, 212, 255, 0.6));
+            }
+        }
+        
+        @keyframes titleGlow {
+            0% { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 212, 255, 0.5); }
+            100% { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 212, 255, 0.8); }
+        }
+        
+        /* Activity Card Styles */
+        .activity-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .activity-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
+        }
+        
+        .activity-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: white;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 0.8), 0 0 35px rgba(255, 255, 255, 0.6);
+            animation: avatarGlow 3s ease-in-out infinite alternate;
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .room-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .room-badge-56 {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+        
+        .room-badge-57 {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+            box-shadow: 0 0 10px rgba(116, 185, 255, 0.5);
+        }
+        
+        .room-badge-58 {
+            background: linear-gradient(45deg, #a29bfe, #6c5ce7);
+            box-shadow: 0 0 10px rgba(162, 155, 254, 0.5);
+        }
+        
+        .room-badge-68 {
+            background: linear-gradient(45deg, #00b894, #00a085);
+            box-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
+        }
+        
+        .status-indicator {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+        
+        .status-online {
+            background: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+        }
+        
+        .status-away {
+            background: #ffaa00;
+            box-shadow: 0 0 10px rgba(255, 170, 0, 0.8);
+        }
+        
+        .status-offline {
+            background: #ff0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #764ba2, #667eea);
+        }
+        
+        @keyframes avatarGlow {
+            0% { 
+                text-shadow: 0 0 15px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 0.8), 0 0 35px rgba(255, 255, 255, 0.6);
+            }
+            100% { 
+                text-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 1), 0 0 40px rgba(255, 255, 255, 0.8);
+            }
+        }
+        
+        @keyframes statusPulse {
+            0% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(1.2);
+                opacity: 0.7;
+            }
+            100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Space Background -->
+    <div class="space-bg"></div>
+    
+    <!-- Stars -->
+    <div class="stars" id="stars"></div>
+    
+    <!-- Planets -->
+    <div class="planet planet1"></div>
+    <div class="planet planet2"></div>
+    <div class="planet planet3"></div>
+    
+    <!-- Shooting Stars -->
+    <div class="shooting-star shooting-star1"></div>
+    <div class="shooting-star shooting-star2"></div>
+    <div class="shooting-star shooting-star3"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="space-header shadow-2xl">
+            <!-- Space Background Elements -->
+            <div class="space-bg-header">
+                <!-- Nebula Effects -->
+                <div class="nebula nebula1"></div>
+                <div class="nebula nebula2"></div>
+                <div class="nebula nebula3"></div>
+            </div>
+            
+            <div class="container mx-auto px-4 py-8">
+                <div class="header-content text-center">
+                    <div class="logo-glow mb-6">
+                        <img src="https://img5.pic.in.th/file/secure-sv1/8754BDAF-5F2E-4B33-B3D6-C7E50AAF5352.png" 
+                             alt="โลโก้โรงเรียน" class="mx-auto" style="max-width: 140px;">
+                    </div>
+                    <h1 class="header-title text-4xl font-bold text-white mb-3">ระบบจัดการสารสนเทศ ปีการศึกษา 2568</h1>
+                    <p class="text-xl text-cyan-200 mb-3">กลุ่มสาระการเรียนรู้วิทยาศาสตร์และเทคโนโลยี</p>
+                    <div class="flex items-center justify-center text-cyan-100 text-lg">
+                        <i class="fas fa-clock mr-2 text-yellow-300"></i>
+                        <span id="currentDateTime"></span>
+                    </div>
+                    
+                    <!-- Firebase Status Indicator -->
+                    <div class="mt-4 flex items-center justify-center">
+                        <div class="bg-black/30 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
+                            <div class="flex items-center">
+                                <div id="firebaseIndicator" class="w-2 h-2 rounded-full mr-2 bg-yellow-400"></div>
+                                <span id="firebaseStatusText" class="text-white text-sm font-medium">กำลังเชื่อมต่อ Firebase...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="space-nav shadow-md">
+            <div class="container mx-auto px-4">
+                <div class="flex justify-center space-x-8">
+                    <button id="dashboardTab" class="tab-active py-4 px-6 font-semibold transition-all duration-300 text-white">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </button>
+                    <button id="documentsTab" class="py-4 px-6 font-semibold text-gray-300 hover:text-cyan-300 transition-all duration-300">
+                        <i class="fas fa-download mr-2"></i>ดาวน์โหลดเอกสาร
+                    </button>
+                    <button id="loginTab" class="py-4 px-6 font-semibold text-gray-300 hover:text-cyan-300 transition-all duration-300">
+                        <i class="fas fa-sign-in-alt mr-2"></i>เข้าสู่ระบบ
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Dashboard Content -->
+        <div id="dashboardContent" class="container mx-auto px-4 py-8">
+            <!-- News Cards -->
+            <div class="mb-8">
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-bold text-white mb-2">
+                        <i class="fas fa-bullhorn text-yellow-400 mr-3"></i>ประกาศข่าวสารสำคัญ
+                    </h2>
+                    <div class="w-24 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 mx-auto rounded-full"></div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="newsCards">
+                    <!-- News cards will be populated here -->
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="mb-8">
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-bold text-white mb-2">
+                        <i class="fas fa-chart-bar text-cyan-400 mr-3"></i>สถิติการใช้งานระบบ
+                    </h2>
+                    <div class="w-24 h-1 bg-gradient-to-r from-cyan-400 to-blue-500 mx-auto rounded-full"></div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Stats Card 1: Total Usage -->
+                    <div class="rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all duration-300 border-2 border-indigo-300/30" style="background: linear-gradient(135deg, rgba(165, 180, 252, 0.3) 0%, rgba(129, 140, 248, 0.4) 100%); backdrop-filter: blur(15px); box-shadow: 0 8px 32px rgba(165, 180, 252, 0.2), 0 0 15px rgba(165, 180, 252, 0.1);">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-indigo-300/40 rounded-full p-4 shadow-lg">
+                                <i class="fas fa-globe text-3xl text-indigo-100"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-indigo-100 text-sm font-semibold drop-shadow-lg">การเข้าใช้ทั้งหมด</p>
+                                <p class="text-4xl font-black text-white drop-shadow-lg" id="totalUsage" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">0</p>
+                                <p class="text-indigo-200 text-sm font-medium">ครั้ง</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-green-300 bg-green-400/20 px-3 py-1 rounded-full" id="usageGrowth">
+                            <i class="fas fa-arrow-up text-sm mr-1"></i>
+                            <span class="text-sm font-semibold">+0% จากเดือนที่แล้ว</span>
+                        </div>
+                    </div>
+
+                    <!-- Stats Card 2: Monthly Usage -->
+                    <div class="rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all duration-300 border-2 border-cyan-300/30" style="background: linear-gradient(135deg, rgba(103, 232, 249, 0.3) 0%, rgba(34, 211, 238, 0.4) 100%); backdrop-filter: blur(15px); box-shadow: 0 8px 32px rgba(103, 232, 249, 0.2), 0 0 15px rgba(103, 232, 249, 0.1);">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-cyan-300/40 rounded-full p-4 shadow-lg">
+                                <i class="fas fa-chart-line text-3xl text-cyan-100"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-cyan-100 text-sm font-semibold drop-shadow-lg">เข้าใช้เดือนนี้</p>
+                                <p class="text-4xl font-black text-white drop-shadow-lg" id="monthlyUsage" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">0</p>
+                                <p class="text-cyan-200 text-sm font-medium">ครั้ง</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-blue-300 bg-blue-400/20 px-3 py-1 rounded-full">
+                            <i class="fas fa-calendar text-sm mr-1"></i>
+                            <span class="text-sm font-semibold" id="currentMonthLabel">มกราคม 2568</span>
+                        </div>
+                    </div>
+
+                    <!-- Stats Card 3: Students by Subject -->
+                    <div class="rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all duration-300 border-2 border-emerald-300/30" style="background: linear-gradient(135deg, rgba(110, 231, 183, 0.3) 0%, rgba(52, 211, 153, 0.4) 100%); backdrop-filter: blur(15px); box-shadow: 0 8px 32px rgba(110, 231, 183, 0.2), 0 0 15px rgba(110, 231, 183, 0.1);">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-emerald-300/40 rounded-full p-4 shadow-lg">
+                                <i class="fas fa-book-open text-3xl text-emerald-100"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-emerald-100 text-sm font-semibold drop-shadow-lg">รายวิชาที่เปิดสอน</p>
+                                <p class="text-4xl font-black text-white drop-shadow-lg" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);" id="totalSubjects">0</p>
+                                <p class="text-emerald-200 text-sm font-medium">วิชา</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between items-center bg-orange-400/30 px-3 py-2 rounded-lg border border-orange-300/40">
+                                <span class="text-orange-100 font-semibold">🔬 ฟิสิกส์</span>
+                                <span class="text-white font-bold text-lg drop-shadow-lg" id="physicsCount">0 คน</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-blue-400/30 px-3 py-2 rounded-lg border border-blue-300/40">
+                                <span class="text-blue-100 font-semibold">💡 นวัตกรรม 2</span>
+                                <span class="text-white font-bold text-lg drop-shadow-lg" id="innovation2Count">0 คน</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-purple-400/30 px-3 py-2 rounded-lg border border-purple-300/40">
+                                <span class="text-purple-100 font-semibold">🚀 นวัตกรรม 3</span>
+                                <span class="text-white font-bold text-lg drop-shadow-lg" id="innovation3Count">0 คน</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Card 4: Students by Classroom -->
+                    <div class="rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all duration-300 border-2 border-rose-300/30" style="background: linear-gradient(135deg, rgba(251, 113, 133, 0.3) 0%, rgba(244, 63, 94, 0.4) 100%); backdrop-filter: blur(15px); box-shadow: 0 8px 32px rgba(251, 113, 133, 0.2), 0 0 15px rgba(251, 113, 133, 0.1);">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-rose-300/40 rounded-full p-4 shadow-lg">
+                                <i class="fas fa-users text-3xl text-rose-100"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-rose-100 text-sm font-semibold drop-shadow-lg">นักเรียนแยกตามห้อง</p>
+                                <p class="text-4xl font-black text-white drop-shadow-lg" id="totalStudentsCount" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">0</p>
+                                <p class="text-rose-200 text-sm font-medium">คน</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div class="text-center bg-orange-400/30 rounded-lg py-3 border border-orange-300/40">
+                                <div class="font-black text-xl text-white drop-shadow-lg" id="room6Count" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">0</div>
+                                <div class="text-orange-100 font-semibold">ห้อง 5/6</div>
+                            </div>
+                            <div class="text-center bg-blue-400/30 rounded-lg py-3 border border-blue-300/40">
+                                <div class="font-black text-xl text-white drop-shadow-lg" id="room7Count" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">0</div>
+                                <div class="text-blue-100 font-semibold">ห้อง 5/7</div>
+                            </div>
+                            <div class="text-center bg-purple-400/30 rounded-lg py-3 border border-purple-300/40">
+                                <div class="font-black text-xl text-white drop-shadow-lg" id="room8Count" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">0</div>
+                                <div class="text-purple-100 font-semibold">ห้อง 5/8</div>
+                            </div>
+                            <div class="text-center bg-green-400/30 rounded-lg py-3 border border-green-300/40">
+                                <div class="font-black text-xl text-white drop-shadow-lg" id="room68Count" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">0</div>
+                                <div class="text-green-100 font-semibold">ห้อง 6/8</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="mb-8">
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-bold text-white mb-2">
+                        <i class="fas fa-chart-pie text-purple-400 mr-3"></i>กราฟสถิติการใช้งาน
+                    </h2>
+                    <div class="w-24 h-1 bg-gradient-to-r from-purple-400 to-pink-500 mx-auto rounded-full"></div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Room Usage Chart -->
+                    <div class="glass-card rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-white mb-4 text-center">
+                            <i class="fas fa-door-open mr-2 text-cyan-400"></i>สถิติการเข้าใช้งานตามห้องเรียน
+                        </h3>
+                        <div class="flex justify-center">
+                            <canvas id="roomChart" width="300" height="300"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Subject Usage Chart -->
+                    <div class="glass-card rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-white mb-4 text-center">
+                            <i class="fas fa-book mr-2 text-green-400"></i>สถิติการใช้งานตามรายวิชา
+                        </h3>
+                        <div class="flex justify-center">
+                            <canvas id="subjectChart" width="300" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Cards -->
+            <div class="mb-8">
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-bold text-white mb-2">
+                        <i class="fas fa-history mr-2 text-orange-400"></i>การเข้าใช้งานล่าสุด
+                    </h2>
+                    <div class="w-24 h-1 bg-gradient-to-r from-orange-400 to-red-500 mx-auto rounded-full"></div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="recentActivityCards">
+                    <!-- Recent activity cards will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents Content -->
+        <div id="documentsContent" class="container mx-auto px-4 py-8" style="display: none;">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-white mb-2">
+                    <i class="fas fa-download text-cyan-400 mr-3"></i>ดาวน์โหลดเอกสาร
+                </h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-cyan-400 to-blue-500 mx-auto rounded-full"></div>
+                <p class="text-cyan-200 mt-4">เอกสารการเรียนการสอน ข้อสอบ และเอกสารที่เกี่ยวข้อง</p>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="mb-8">
+                <div class="glass-card rounded-xl p-6 shadow-lg">
+                    <h3 class="text-xl font-bold text-white mb-4">
+                        <i class="fas fa-filter mr-2"></i>กรองเอกสาร
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-cyan-200 mb-2">รายวิชา</label>
+                            <select id="documentSubjectFilter" class="space-input w-full px-3 py-2 rounded-md">
+                                <option value="">ทุกรายวิชา</option>
+                                <option value="physics">ฟิสิกส์</option>
+                                <option value="innovation2">นวัตกรรม 2</option>
+                                <option value="innovation3">นวัตกรรม 3</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-cyan-200 mb-2">ประเภทเอกสาร</label>
+                            <select id="documentTypeFilter" class="space-input w-full px-3 py-2 rounded-md">
+                                <option value="">ทุกประเภท</option>
+                                <option value="lesson">เอกสารประกอบการเรียน</option>
+                                <option value="exam">ข้อสอบ</option>
+                                <option value="assignment">ใบงาน</option>
+                                <option value="reference">เอกสารอ้างอิง</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-cyan-200 mb-2">ห้องเรียน</label>
+                            <select id="documentRoomFilter" class="space-input w-full px-3 py-2 rounded-md">
+                                <option value="">ทุกห้อง</option>
+                                <option value="5/6">ห้อง 5/6</option>
+                                <option value="5/7">ห้อง 5/7</option>
+                                <option value="5/8">ห้อง 5/8</option>
+                                <option value="6/8">ห้อง 6/8</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button id="filterDocuments" class="space-btn px-6 py-2 rounded-md font-semibold">
+                            <i class="fas fa-search mr-2"></i>ค้นหา
+                        </button>
+                        <button id="clearDocumentFilters" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-md font-semibold transition-colors ml-2">
+                            <i class="fas fa-times mr-2"></i>ล้างตัวกรอง
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Grid -->
+            <div id="documentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Documents will be populated here -->
+            </div>
+
+            <!-- No Documents Message -->
+            <div id="noDocumentsMessage" class="text-center py-12" style="display: none;">
+                <div class="glass-card rounded-xl p-8 shadow-lg">
+                    <i class="fas fa-file-alt text-6xl text-gray-400 mb-4"></i>
+                    <h3 class="text-xl font-bold text-white mb-2">ยังไม่มีเอกสาร</h3>
+                    <p class="text-gray-300">ยังไม่มีเอกสารที่ตรงกับเงื่อนไขที่เลือก</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Content -->
+        <div id="loginContent" class="container mx-auto px-4 py-8" style="display: none;">
+            <div class="max-w-md mx-auto glass-card rounded-xl shadow-lg p-8">
+                <div class="text-center mb-6">
+                    <i class="fas fa-user-astronaut text-6xl text-cyan-400 mb-4"></i>
+                    <h2 class="text-2xl font-bold text-white">เข้าสู่ระบบ</h2>
+                </div>
+
+                <!-- User Type Selection -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-cyan-200 mb-2">ประเภทผู้ใช้</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center text-white">
+                            <input type="radio" name="userType" value="student" class="mr-2" checked>
+                            <span>นักเรียน</span>
+                        </label>
+                        <label class="flex items-center text-white">
+                            <input type="radio" name="userType" value="admin" class="mr-2">
+                            <span>ครู (Admin)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm">
+                    <div id="studentLogin">
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-cyan-200 mb-2">รหัสนักเรียน (รหัสผ่าน)</label>
+                            <input type="password" id="studentPassword" name="studentPassword"
+                                   class="space-input w-full px-3 py-2 rounded-md transition-all duration-300"
+                                   placeholder="กรอกรหัสนักเรียน">
+                        </div>
+                    </div>
+
+                    <div id="adminLogin" style="display: none;">
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-cyan-200 mb-2">รหัสผ่านครู</label>
+                            <input type="password" id="adminPassword" name="adminPassword"
+                                   class="space-input w-full px-3 py-2 rounded-md transition-all duration-300"
+                                   placeholder="กรอกรหัสผ่าน">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="space-btn w-full py-2 px-4 rounded-md font-semibold">
+                        <i class="fas fa-rocket mr-2"></i>เข้าสู่ระบบ
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Student Dashboard Modal -->
+        <div id="studentModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+            <div class="glass-card rounded-xl shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-white/20">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-white">
+                            <i class="fas fa-user-graduate mr-2 text-cyan-400"></i>ข้อมูลนักเรียน
+                        </h2>
+                        <div class="flex gap-3">
+                            <button id="studentLogoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md font-semibold transition-colors">
+                                <i class="fas fa-sign-out-alt mr-1"></i>ออกจากระบบ
+                            </button>
+                            <button id="closeStudentModal" class="text-gray-300 hover:text-white transition-colors">
+                                <i class="fas fa-times text-2xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="studentInfo" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Student info will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard Content -->
+        <div id="adminContent" class="container mx-auto px-4 py-8" style="display: none;">
+            <div class="glass-card rounded-xl shadow-xl">
+                <div class="p-6 border-b border-white/20">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-white">
+                            <i class="fas fa-cog mr-2 text-cyan-400"></i>ระบบจัดการครู
+                        </h2>
+                        <button id="backToDashboard" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-semibold transition-colors">
+                            <i class="fas fa-arrow-left mr-2"></i>กลับหน้าแรก
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <!-- Admin Tabs -->
+                    <div class="flex flex-wrap gap-2 mb-6 border-b border-white/20 pb-2">
+                        <button class="admin-tab admin-tab-active py-2 px-4 font-semibold border-b-2 border-cyan-400 text-cyan-400" data-tab="students">
+                            <i class="fas fa-users mr-2"></i>จัดการนักเรียน
+                        </button>
+                        <button class="admin-tab py-2 px-4 font-semibold text-gray-300 hover:text-cyan-300 transition-colors" data-tab="news">
+                            <i class="fas fa-bullhorn mr-2"></i>จัดการข่าวสาร
+                        </button>
+                        <button class="admin-tab py-2 px-4 font-semibold text-gray-300 hover:text-cyan-300 transition-colors" data-tab="homework">
+                            <i class="fas fa-tasks mr-2"></i>เพิ่มภาระงาน/การสอบ
+                        </button>
+                        <button class="admin-tab py-2 px-4 font-semibold text-gray-300 hover:text-cyan-300 transition-colors" data-tab="scores">
+                            <i class="fas fa-clipboard-list mr-2"></i>การจัดการคะแนน
+                        </button>
+                        <button class="admin-tab py-2 px-4 font-semibold text-gray-300 hover:text-cyan-300 transition-colors" data-tab="documents">
+                            <i class="fas fa-file-alt mr-2"></i>จัดการเอกสาร
+                        </button>
+                        <button class="admin-tab py-2 px-4 font-semibold text-gray-300 hover:text-cyan-300 transition-colors" data-tab="info">
+                            <i class="fas fa-info-circle mr-2"></i>สารสนเทศรวม
+                        </button>
+                        <button class="admin-tab py-2 px-4 font-semibold text-gray-300 hover:text-cyan-300 transition-colors" data-tab="messages">
+                            <i class="fas fa-envelope mr-2"></i>ส่งข้อความส่วนตัว
+                        </button>
+                        <button class="admin-tab py-2 px-4 font-semibold text-gray-300 hover:text-cyan-300 transition-colors" data-tab="stats">
+                            <i class="fas fa-chart-bar mr-2"></i>สถิติ
+                        </button>
+                    </div>
+
+                    <!-- Students Management -->
+                    <div id="studentsTab" class="admin-content">
+                        <div class="mb-4 flex flex-wrap gap-3">
+                            <button id="addSingleStudentBtn" class="space-btn px-4 py-2 rounded-md font-semibold">
+                                <i class="fas fa-user-plus mr-2"></i>เพิ่มนักเรียน 1 คน
+                            </button>
+                            <button id="addMultipleStudentsBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-semibold transition-colors">
+                                <i class="fas fa-users mr-2"></i>เพิ่มนักเรียนหลายคน
+                            </button>
+                            <button id="importExcelBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md font-semibold transition-colors">
+                                <i class="fas fa-file-excel mr-2"></i>นำเข้าจาก Excel
+                            </button>
+                            <button id="syncFirebaseBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-semibold transition-colors">
+                                <i class="fas fa-sync-alt mr-2"></i>ซิงค์ Firebase
+                            </button>
+                            <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-semibold transition-colors ml-auto">
+                                <i class="fas fa-sign-out-alt mr-2"></i>ออกจากระบบ
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full border-collapse border border-white/20">
+                                <thead>
+                                    <tr class="bg-white/10">
+                                        <th class="border border-white/20 px-4 py-2 text-cyan-200">รหัสนักเรียน</th>
+                                        <th class="border border-white/20 px-4 py-2 text-cyan-200">เลขที่</th>
+                                        <th class="border border-white/20 px-4 py-2 text-cyan-200">ชื่อ-สกุล</th>
+                                        <th class="border border-white/20 px-4 py-2 text-cyan-200">ห้องเรียน</th>
+                                        <th class="border border-white/20 px-4 py-2 text-cyan-200">การจัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTable">
+                                    <!-- Students will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- News Management -->
+                    <div id="newsTab" class="admin-content" style="display: none;">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- News Card 1 -->
+                            <div class="bg-pink-500/20 p-6 rounded-lg border border-pink-400/30">
+                                <h4 class="text-lg font-semibold text-pink-300 mb-3">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>ประกาศสำคัญ
+                                </h4>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-pink-200 mb-2">หัวข้อ</label>
+                                    <input type="text" id="news1Title" class="space-input w-full px-3 py-2 rounded-md" 
+                                           value="🚨 ประกาศสำคัญ">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-pink-200 mb-2">เนื้อหา</label>
+                                    <textarea id="news1Content" rows="4" class="space-input w-full px-3 py-2 rounded-md">📋 <strong>ส่งงานภาระงานครั้งที่ 2</strong><br>
+กำหนดส่ง: วันศุกร์ที่ 31 มกราคม 2568<br>
+เวลา: 16:30 น. (ไม่รับงานล่าช้า)</textarea>
+                                </div>
+                                <button onclick="updateNews(1)" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-md font-semibold transition-colors">
+                                    <i class="fas fa-save mr-2"></i>บันทึก
+                                </button>
+                            </div>
+
+                            <!-- News Card 2 -->
+                            <div class="bg-blue-500/20 p-6 rounded-lg border border-blue-400/30">
+                                <h4 class="text-lg font-semibold text-blue-300 mb-3">
+                                    <i class="fas fa-calendar-alt mr-2"></i>กำหนดการสอบ
+                                </h4>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-blue-200 mb-2">หัวข้อ</label>
+                                    <input type="text" id="news2Title" class="space-input w-full px-3 py-2 rounded-md" 
+                                           value="📅 กำหนดการสอบ">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-blue-200 mb-2">เนื้อหา</label>
+                                    <textarea id="news2Content" rows="4" class="space-input w-full px-3 py-2 rounded-md">📝 <strong>สอบกลางภาค ภาคเรียนที่ 2</strong><br>
+วันที่: 10-14 กุมภาพันธ์ 2568<br>
+เตรียมตัวให้พร้อม! 💪</textarea>
+                                </div>
+                                <button onclick="updateNews(2)" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-semibold transition-colors">
+                                    <i class="fas fa-save mr-2"></i>บันทึก
+                                </button>
+                            </div>
+
+                            <!-- News Card 3 -->
+                            <div class="bg-green-500/20 p-6 rounded-lg border border-green-400/30">
+                                <h4 class="text-lg font-semibold text-green-300 mb-3">
+                                    <i class="fas fa-trophy mr-2"></i>ประกวดโครงงาน
+                                </h4>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-green-200 mb-2">หัวข้อ</label>
+                                    <input type="text" id="news3Title" class="space-input w-full px-3 py-2 rounded-md" 
+                                           value="🏆 ประกวดโครงงาน">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-green-200 mb-2">เนื้อหา</label>
+                                    <textarea id="news3Content" rows="4" class="space-input w-full px-3 py-2 rounded-md">🔬 <strong>งานประกวดโครงงานวิทยาศาสตร์</strong><br>
+วันที่: 20 กุมภาพันธ์ 2568<br>
+รางวัลมากมาย รอคุณอยู่! ✨</textarea>
+                                </div>
+                                <button onclick="updateNews(3)" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-semibold transition-colors">
+                                    <i class="fas fa-save mr-2"></i>บันทึก
+                                </button>
+                            </div>
+
+                            <!-- News Card 4 -->
+                            <div class="bg-purple-500/20 p-6 rounded-lg border border-purple-400/30">
+                                <h4 class="text-lg font-semibold text-purple-300 mb-3">
+                                    <i class="fas fa-graduation-cap mr-2"></i>ข้อมูลการเรียน
+                                </h4>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-purple-200 mb-2">หัวข้อ</label>
+                                    <input type="text" id="news4Title" class="space-input w-full px-3 py-2 rounded-md" 
+                                           value="🎓 ข้อมูลการเรียน">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-purple-200 mb-2">เนื้อหา</label>
+                                    <textarea id="news4Content" rows="4" class="space-input w-full px-3 py-2 rounded-md">📚 <strong>ยินดีต้อนรับสู่ระบบจัดการสารสนเทศ</strong><br>
+ปีการศึกษา 2568<br>
+ตรวจสอบคะแนนและภาระงานได้ที่นี่ 🌟</textarea>
+                                </div>
+                                <button onclick="updateNews(4)" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md font-semibold transition-colors">
+                                    <i class="fas fa-save mr-2"></i>บันทึก
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Homework/Assignments Management -->
+                    <div id="homeworkTab" class="admin-content" style="display: none;">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Assignment Form -->
+                            <div class="glass-card p-6">
+                                <h3 class="text-xl font-bold text-white mb-4">
+                                    <i class="fas fa-plus mr-2"></i>เพิ่มภาระงาน/การสอบ/ชิ้นงาน
+                                </h3>
+                                <form id="assignmentForm">
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-cyan-200 mb-2">ประเภท</label>
+                                        <select id="assignmentType" class="space-input w-full px-3 py-2 rounded-md">
+                                            <option value="">เลือกประเภท</option>
+                                            <option value="homework">ภาระงาน</option>
+                                            <option value="exam">การสอบ</option>
+                                            <option value="project">ชิ้นงาน</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-cyan-200 mb-2">ชื่อ</label>
+                                        <input type="text" id="assignmentTitle" class="space-input w-full px-3 py-2 rounded-md">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-cyan-200 mb-2">รายละเอียด</label>
+                                        <textarea id="assignmentDescription" rows="3" class="space-input w-full px-3 py-2 rounded-md"></textarea>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-cyan-200 mb-2">รายวิชา</label>
+                                        <select id="assignmentSubject" class="space-input w-full px-3 py-2 rounded-md">
+                                            <option value="">เลือกรายวิชา</option>
+                                            <option value="physics">ฟิสิกส์</option>
+                                            <option value="innovation2">นวัตกรรม 2</option>
+                                            <option value="innovation3">นวัตกรรม 3</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-cyan-200 mb-2">ห้องเรียน</label>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <label class="flex items-center text-white">
+                                                <input type="checkbox" name="assignmentRooms" value="5/6" class="mr-2">
+                                                ห้อง 5/6
+                                            </label>
+                                            <label class="flex items-center text-white">
+                                                <input type="checkbox" name="assignmentRooms" value="5/7" class="mr-2">
+                                                ห้อง 5/7
+                                            </label>
+                                            <label class="flex items-center text-white">
+                                                <input type="checkbox" name="assignmentRooms" value="5/8" class="mr-2">
+                                                ห้อง 5/8
+                                            </label>
+                                            <label class="flex items-center text-white">
+                                                <input type="checkbox" name="assignmentRooms" value="6/8" class="mr-2">
+                                                ห้อง 6/8
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-cyan-200 mb-2">คะแนนเต็ม (0 สำหรับเช็คสถานะส่ง/ไม่ส่ง)</label>
+                                        <input type="number" id="assignmentMaxScore" class="space-input w-full px-3 py-2 rounded-md" min="0" value="0">
+                                    </div>
+                                    <div class="mb-4" id="passScoreGroup" style="display: none;">
+                                        <label class="block text-sm font-medium text-cyan-200 mb-2">คะแนนผ่าน</label>
+                                        <input type="number" id="assignmentPassScore" class="space-input w-full px-3 py-2 rounded-md" min="0">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-cyan-200 mb-2">กำหนดส่ง</label>
+                                        <input type="datetime-local" id="assignmentDueDate" class="space-input w-full px-3 py-2 rounded-md">
+                                    </div>
+                                    <button type="submit" class="space-btn w-full py-2 rounded-md font-semibold">
+                                        <i class="fas fa-plus mr-2"></i>เพิ่มรายการ
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Assignment Preview -->
+                            <div class="glass-card p-6">
+                                <h3 class="text-xl font-bold text-white mb-4">
+                                    <i class="fas fa-eye mr-2"></i>ตัวอย่าง
+                                </h3>
+                                <div id="assignmentPreview" class="bg-white/5 p-4 rounded-md min-h-[300px]">
+                                    <div class="text-center text-gray-400 py-8">
+                                        <i class="fas fa-clipboard-list text-4xl mb-2"></i>
+                                        <p>กรอกข้อมูลเพื่อดูตัวอย่าง</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4 grid grid-cols-3 gap-4 text-center">
+                                    <div class="bg-blue-500/20 p-3 rounded">
+                                        <p class="text-blue-300 font-semibold">ภาระงาน</p>
+                                        <p class="text-white text-2xl font-bold" id="homeworkCount">0</p>
+                                    </div>
+                                    <div class="bg-green-500/20 p-3 rounded">
+                                        <p class="text-green-300 font-semibold">การสอบ</p>
+                                        <p class="text-white text-2xl font-bold" id="examCount">0</p>
+                                    </div>
+                                    <div class="bg-purple-500/20 p-3 rounded">
+                                        <p class="text-purple-300 font-semibold">ชิ้นงาน</p>
+                                        <p class="text-white text-2xl font-bold" id="projectCount">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-xl font-bold text-white">
+                                    <i class="fas fa-list mr-2"></i>รายการทั้งหมด
+                                </h3>
+                                <button onclick="exportAllScores()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-semibold transition-colors">
+                                    <i class="fas fa-file-export mr-2"></i>ส่งออกคะแนนทั้งหมด (CSV)
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full border-collapse border border-white/20">
+                                    <thead>
+                                        <tr class="bg-white/10">
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">ประเภท</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">ชื่อ</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">รายวิชา</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">ห้องเรียน</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">คะแนน</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">กำหนดส่ง</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">การจัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="assignmentsTable">
+                                        <!-- Assignments will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scores Management -->
+                    <div id="scoresTab" class="admin-content" style="display: none;">
+                        <div class="mb-6">
+                            <h3 class="text-xl font-bold text-white mb-4">
+                                <i class="fas fa-tasks mr-2"></i>เลือกภาระงาน/การสอบ/ชิ้นงานเพื่อจัดการคะแนน
+                            </h3>
+                            <select id="assignmentSelect" class="space-input w-full px-3 py-2 rounded-md mb-4">
+                                <option value="">เลือกภาระงาน</option>
+                            </select>
+                            <div id="scoreStatsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <!-- Score stats will be populated here -->
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full border-collapse border border-white/20">
+                                    <thead>
+                                        <tr class="bg-white/10">
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">รหัสนักเรียน</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">ชื่อ-สกุล</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">ห้อง</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">คะแนน/สถานะ</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">การจัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="scoresTable">
+                                        <!-- Scores will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents Management -->
+                    <div id="documentsTab" class="admin-content" style="display: none;">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Upload Form -->
+                            <div class="glass-card p-6">
+                                <h3 class="text-xl font-bold text-white mb-4">
+                                    <i class="fas fa-upload mr-2"></i>อัปโหลดเอกสารใหม่
+                                </h3>
+                                <form id="documentUploadForm">
+                                    <input type="hidden" id="documentId" value="">
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-cyan-200 mb-2">ชื่อเอกสาร *</label>
+                                        <input type="text" id="documentTitle" class="space-input w-full px-3 py-2 rounded-md" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-cyan-200 mb-2">คำอธิบาย</label>
+                                        <textarea id="documentDescription" rows="3" class="space-input w-full px-3 py-2 rounded-md"></textarea>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-cyan-200 mb-2">รายวิชา *</label>
+                                        <select id="documentSubject" class="space-input w-full px-3 py-2 rounded-md" required>
+                                            <option value="">เลือกรายวิชา</option>
+                                            <option value="physics">ฟิสิกส์</option>
+                                            <option value="innovation2">นวัตกรรม 2</option>
+                                            <option value="innovation3">นวัตกรรม 3</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-cyan-200 mb-2">ประเภทเอกสาร *</label>
+                                        <select id="documentType" class="space-input w-full px-3 py-2 rounded-md" required>
+                                            <option value="">เลือกประเภท</option>
+                                            <option value="lesson">เอกสารประกอบการเรียน</option>
+                                            <option value="exam">ข้อสอบ</option>
+                                            <option value="assignment">ใบงาน</option>
+                                            <option value="reference">เอกสารอ้างอิง</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-cyan-200 mb-2">ห้องเรียน *</label>
+                                        <label class="flex items-center text-white mb-2">
+                                            <input type="checkbox" id="allRoomsDocument" class="mr-2">
+                                            เลือกทุกห้อง
+                                        </label>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <label class="flex items-center text-white">
+                                                <input type="checkbox" name="documentRooms" value="5/6" class="mr-2">
+                                                ห้อง 5/6
+                                            </label>
+                                            <label class="flex items-center text-white">
+                                                <input type="checkbox" name="documentRooms" value="5/7" class="mr-2">
+                                                ห้อง 5/7
+                                            </label>
+                                            <label class="flex items-center text-white">
+                                                <input type="checkbox" name="documentRooms" value="5/8" class="mr-2">
+                                                ห้อง 5/8
+                                            </label>
+                                            <label class="flex items-center text-white">
+                                                <input type="checkbox" name="documentRooms" value="6/8" class="mr-2">
+                                                ห้อง 6/8
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-cyan-200 mb-2">เลือกไฟล์ (PDF เท่านั้น, สูงสุด 50MB) *</label>
+                                        <div class="border-2 border-dashed border-white/20 rounded-md p-6 text-center cursor-pointer hover:border-cyan-400/50 transition-colors">
+                                            <input type="file" id="documentFile" accept=".pdf" class="hidden" required>
+                                            <div id="fileDropZone">
+                                                <i class="fas fa-upload text-4xl text-cyan-400 mb-2"></i>
+                                                <p class="text-white">ลากไฟล์มาที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+                                                <p class="text-gray-400 text-sm">รองรับเฉพาะ PDF</p>
+                                            </div>
+                                            <div id="filePreview" class="hidden">
+                                                <p class="text-white font-semibold" id="fileName">filename.pdf</p>
+                                                <p class="text-gray-400 text-sm" id="fileSize">0 MB</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="space-btn w-full py-2 rounded-md font-semibold">
+                                        <i class="fas fa-upload mr-2"></i><span id="submitButtonText">อัปโหลดเอกสาร</span>
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Document Statistics -->
+                            <div class="glass-card p-6">
+                                <h3 class="text-xl font-bold text-white mb-4">
+                                    <i class="fas fa-chart-pie mr-2"></i>สถิติเอกสาร
+                                </h3>
+                                <div class="grid grid-cols-2 gap-4 mb-6">
+                                    <div class="bg-blue-500/20 p-4 rounded-lg">
+                                        <p class="text-blue-300 text-sm">เอกสารทั้งหมด</p>
+                                        <p class="text-white text-3xl font-bold" id="totalDocuments">0</p>
+                                    </div>
+                                    <div class="bg-green-500/20 p-4 rounded-lg">
+                                        <p class="text-green-300 text-sm">ดาวน์โหลดทั้งหมด</p>
+                                        <p class="text-white text-3xl font-bold" id="totalDownloads">0</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 mb-6">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-cyan-200">เอกสารประกอบการเรียน</span>
+                                        <span class="text-white font-semibold" id="lessonDocsCount">0</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-cyan-200">ข้อสอบ</span>
+                                        <span class="text-white font-semibold" id="examDocsCount">0</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-cyan-200">ใบงาน</span>
+                                        <span class="text-white font-semibold" id="assignmentDocsCount">0</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-cyan-200">เอกสารอ้างอิง</span>
+                                        <span class="text-white font-semibold" id="referenceDocsCount">0</span>
+                                    </div>
+                                </div>
+                                <h4 class="text-lg font-semibold text-white mb-2">เอกสารล่าสุด</h4>
+                                <div class="space-y-2" id="recentDocuments">
+                                    <!-- Recent documents will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-xl font-bold text-white">
+                                    <i class="fas fa-list mr-2"></i>รายการเอกสารทั้งหมด
+                                </h3>
+                                <div class="flex gap-2">
+                                    <button id="refreshDocuments" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-semibold transition-colors">
+                                        <i class="fas fa-sync mr-2"></i>รีเฟรช
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-cyan-200 mb-2">รายวิชา</label>
+                                    <select id="adminDocumentSubjectFilter" class="space-input w-full px-3 py-2 rounded-md">
+                                        <option value="">ทุกรายวิชา</option>
+                                        <option value="physics">ฟิสิกส์</option>
+                                        <option value="innovation2">นวัตกรรม 2</option>
+                                        <option value="innovation3">นวัตกรรม 3</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-cyan-200 mb-2">ประเภท</label>
+                                    <select id="adminDocumentTypeFilter" class="space-input w-full px-3 py-2 rounded-md">
+                                        <option value="">ทุกประเภท</option>
+                                        <option value="lesson">เอกสารประกอบการเรียน</option>
+                                        <option value="exam">ข้อสอบ</option>
+                                        <option value="assignment">ใบงาน</option>
+                                        <option value="reference">เอกสารอ้างอิง</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-cyan-200 mb-2">ห้องเรียน</label>
+                                    <select id="adminDocumentRoomFilter" class="space-input w-full px-3 py-2 rounded-md">
+                                        <option value="">ทุกห้อง</option>
+                                        <option value="5/6">ห้อง 5/6</option>
+                                        <option value="5/7">ห้อง 5/7</option>
+                                        <option value="5/8">ห้อง 5/8</option>
+                                        <option value="6/8">ห้อง 6/8</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button id="filterAdminDocuments" class="space-btn px-6 py-2 rounded-md font-semibold mb-4">
+                                <i class="fas fa-search mr-2"></i>กรอง
+                            </button>
+                            <div class="overflow-x-auto">
+                                <table class="w-full border-collapse border border-white/20">
+                                    <thead>
+                                        <tr class="bg-white/10">
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">ชื่อเอกสาร</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">ประเภท</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">รายวิชา</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">ห้องเรียน</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">ดาวน์โหลด</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">วันที่อัปโหลด</th>
+                                            <th class="border border-white/20 px-4 py-2 text-cyan-200">การจัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminDocumentsTable">
+                                        <!-- Admin documents will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info Tab -->
+                    <div id="infoTab" class="admin-content" style="display: none;">
+                        <h3 class="text-xl font-bold text-white mb-4">
+                            <i class="fas fa-info-circle mr-2"></i>สารสนเทศรวม
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="glass-card p-6">
+                                <h4 class="text-lg font-semibold text-cyan-300 mb-3">การสำรองข้อมูล</h4>
+                                <button onclick="backupData()" class="space-btn w-full py-2 mb-2">
+                                    <i class="fas fa-download mr-2"></i>สำรองข้อมูล (JSON)
+                                </button>
+                                <button onclick="exportStudentData()" class="bg-green-600 hover:bg-green-700 text-white w-full py-2 rounded-md transition-colors">
+                                    <i class="fas fa-file-excel mr-2"></i>ส่งออกข้อมูลนักเรียน (CSV)
+                                </button>
+                            </div>
+                            <div class="glass-card p-6">
+                                <h4 class="text-lg font-semibold text-red-300 mb-3">รีเซ็ตระบบ</h4>
+                                <button onclick="resetSystem()" class="bg-red-600 hover:bg-red-700 text-white w-full py-2 rounded-md transition-colors">
+                                    <i class="fas fa-trash-alt mr-2"></i>รีเซ็ตระบบทั้งหมด
+                                </button>
+                                <p class="text-red-200 text-sm mt-2">คำเตือน: การรีเซ็ตจะลบข้อมูลทั้งหมด!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Messages Tab -->
+                    <div id="messagesTab" class="admin-content" style="display: none;">
+                        <h3 class="text-xl font-bold text-white mb-4">
+                            <i class="fas fa-envelope mr-2"></i>ส่งข้อความส่วนตัว
+                        </h3>
+                        <div class="glass-card p-6">
+                            <form id="messageForm">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-cyan-200 mb-2">เลือกนักเรียน</label>
+                                    <select id="messageStudent" class="space-input w-full px-3 py-2 rounded-md">
+                                        <option value="">เลือกนักเรียน</option>
+                                    </select>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-cyan-200 mb-2">หัวข้อ</label>
+                                    <input type="text" id="messageTitle" class="space-input w-full px-3 py-2 rounded-md">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-cyan-200 mb-2">เนื้อหาข้อความ</label>
+                                    <textarea id="messageContent" rows="5" class="space-input w-full px-3 py-2 rounded-md"></textarea>
+                                </div>
+                                <button type="submit" class="space-btn w-full py-2 rounded-md font-semibold">
+                                    <i class="fas fa-paper-plane mr-2"></i>ส่งข้อความ
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Stats Tab -->
+                    <div id="statsTab" class="admin-content" style="display: none;">
+                        <h3 class="text-xl font-bold text-white mb-4">
+                            <i class="fas fa-chart-bar mr-2"></i>สถิติระบบ
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="glass-card p-6">
+                                <h4 class="text-lg font-semibold text-cyan-300 mb-3">สถิตินักเรียน</h4>
+                                <canvas id="studentStatsChart" height="200"></canvas>
+                            </div>
+                            <div class="glass-card p-6">
+                                <h4 class="text-lg font-semibold text-cyan-300 mb-3">สถิติคะแนน</h4>
+                                <canvas id="scoreStatsChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCWt1h0c1P9NzXqN0yq3Cxu0g9hQPY0K0U",
+            authDomain: "school-system-2568.firebaseapp.com",
+            projectId: "school-system-2568",
+            storageBucket: "school-system-2568.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:abcdefghijklmn"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(app);
+        const storage = firebase.storage(app);
+        let firebaseInitialized = true;
+
+        // System Data
+        let systemData = {
+            students: [],
+            news: [
+                {
+                    title: '🚨 ประกาศสำคัญ',
+                    content: '📋 <strong>ส่งงานภาระงานครั้งที่ 2</strong><br>กำหนดส่ง: วันศุกร์ที่ 31 มกราคม 2568<br>เวลา: 16:30 น. (ไม่รับงานล่าช้า)',
+                    timestamp: '15 มกราคม 2568 เวลา 14:30 น.',
+                    colorClass: 'news-card-1',
+                    icon: 'fa-exclamation-triangle',
+                    tag: 'เร่งด่วน',
+                    tagColor: 'pink'
+                },
+                {
+                    title: '📅 กำหนดการสอบ',
+                    content: '📝 <strong>สอบกลางภาค ภาคเรียนที่ 2</strong><br>วันที่: 10-14 กุมภาพันธ์ 2568<br>เตรียมตัวให้พร้อม! 💪',
+                    timestamp: '20 มกราคม 2568 เวลา 09:15 น.',
+                    colorClass: 'news-card-2',
+                    icon: 'fa-calendar-alt',
+                    tag: 'สำคัญ',
+                    tagColor: 'sky'
+                },
+                {
+                    title: '🏆 ประกวดโครงงาน',
+                    content: '🔬 <strong>งานประกวดโครงงานวิทยาศาสตร์</strong><br>วันที่: 20 กุมภาพันธ์ 2568<br>รางวัลมากมาย รอคุณอยู่! ✨',
+                    timestamp: '18 มกราคม 2568 เวลา 16:45 น.',
+                    colorClass: 'news-card-3',
+                    icon: 'fa-trophy',
+                    tag: 'กิจกรรม',
+                    tagColor: 'emerald'
+                },
+                {
+                    title: '🎓 ข้อมูลการเรียน',
+                    content: '📚 <strong>ยินดีต้อนรับสู่ระบบจัดการสารสนเทศ</strong><br>ปีการศึกษา 2568<br>ตรวจสอบคะแนนและภาระงานได้ที่นี่ 🌟',
+                    timestamp: '10 มกราคม 2568 เวลา 08:00 น.',
+                    colorClass: 'news-card-4',
+                    icon: 'fa-graduation-cap',
+                    tag: 'ทั่วไป',
+                    tagColor: 'violet'
+                }
+            ],
+            assignments: [],
+            assignmentScores: {},
+            documents: [],
+            usageStats: {
+                total: 0,
+                monthly: 0,
+                currentMonth: new Date().getMonth() + '/' + new Date().getFullYear(),
+                lastMonthly: 0
+            },
+            recentActivities: [],
+            messages: [],
+            adminPassword: 'admin123' // Default admin password
+        };
+
+        // Loading functions
+        function showLoading() {
+            $('#loadingOverlay').show();
+        }
+
+        function hideLoading() {
+            $('#loadingOverlay').hide();
+        }
+
+        // Save Data
+        async function saveData() {
+            localStorage.setItem('systemData', JSON.stringify(systemData));
+            if (firebaseInitialized) {
+                try {
+                    await saveDataToFirebase();
+                } catch (error) {
+                    console.error('Failed to save to Firebase:', error);
+                }
+            }
+        }
+
+        // Load Data
+        async function loadData() {
+            const localData = localStorage.getItem('systemData');
+            if (localData) {
+                systemData = JSON.parse(localData);
+            }
+            if (firebaseInitialized) {
+                try {
+                    await loadDataFromFirebase();
+                } catch (error) {
+                    console.error('Failed to load from Firebase:', error);
+                }
+            }
+            // Initialize missing fields
+            if (!systemData.usageStats) {
+                systemData.usageStats = {
+                    total: 0,
+                    monthly: 0,
+                    currentMonth: new Date().getMonth() + '/' + new Date().getFullYear(),
+                    lastMonthly: 0
+                };
+            }
+            if (!systemData.recentActivities) {
+                systemData.recentActivities = [];
+            }
+            if (!systemData.news || systemData.news.length !== 4) {
+                systemData.news = systemData.news; // Keep existing if any
+            }
+            if (!systemData.documents) {
+                systemData.documents = [];
+            }
+            if (!systemData.assignments) {
+                systemData.assignments = [];
+            }
+            if (!systemData.assignmentScores) {
+                systemData.assignmentScores = {};
+            }
+            if (!systemData.students) {
+                systemData.students = [];
+            }
+
+            // Track usage on load
+            trackUsage();
+
+            updateDashboard();
+            loadDocuments();
+            loadNewsToDashboard();
+            loadRecentActivities();
+            loadAssignmentsTable();
+            updateAssignmentCounts();
+            loadAssignmentSelect();
+            loadNewsToAdmin();
+            loadAdminDocuments();
+            updateDocumentStatistics();
+        }
+
+        // Track Usage
+        function trackUsage() {
+            systemData.usageStats.total++;
+            const currentMonthKey = new Date().getMonth() + '/' + new Date().getFullYear();
+            if (systemData.usageStats.currentMonth !== currentMonthKey) {
+                systemData.usageStats.lastMonthly = systemData.usageStats.monthly;
+                systemData.usageStats.monthly = 0;
+                systemData.usageStats.currentMonth = currentMonthKey;
+            }
+            systemData.usageStats.monthly++;
+            saveData();
+        }
+
+        // Update Dashboard
+        function updateDashboard() {
+            $('#totalUsage').text(systemData.usageStats.total);
+            $('#monthlyUsage').text(systemData.usageStats.monthly);
+            const growth = systemData.usageStats.lastMonthly > 0 ? Math.round((systemData.usageStats.monthly / systemData.usageStats.lastMonthly - 1) * 100) : 0;
+            $('#usageGrowth').html(`<i class="fas fa-arrow-${growth >= 0 ? 'up' : 'down'} text-sm mr-1"></i><span class="text-sm font-semibold">${growth}% จากเดือนที่แล้ว</span>`);
+            $('#currentMonthLabel').text(new Date().toLocaleString('th-TH', { month: 'long', year: 'numeric' }));
+
+            // Update student counts
+            const roomCounts = {};
+            systemData.students.forEach(student => {
+                roomCounts[student.room] = (roomCounts[student.room] || 0) + 1;
+            });
+            $('#room6Count').text(roomCounts['5/6'] || 0);
+            $('#room7Count').text(roomCounts['5/7'] || 0);
+            $('#room8Count').text(roomCounts['5/8'] || 0);
+            $('#room68Count').text(roomCounts['6/8'] || 0);
+            $('#totalStudentsCount').text(systemData.students.length);
+
+            // Update subject counts (assuming mapping based on rooms)
+            const subjectCounts = {
+                physics: roomCounts['5/6'] || 0,
+                innovation2: roomCounts['5/7'] || 0,
+                innovation3: roomCounts['5/8'] || 0
+            };
+            $('#physicsCount').text(subjectCounts.physics + ' คน');
+            $('#innovation2Count').text(subjectCounts.innovation2 + ' คน');
+            $('#innovation3Count').text(subjectCounts.innovation3 + ' คน');
+            $('#totalSubjects').text(Object.keys(subjectCounts).length);
+
+            // Update charts if needed
+            updateRoomChart(roomCounts);
+            updateSubjectChart(subjectCounts);
+        }
+
+        // Load News to Dashboard
+        function loadNewsToDashboard() {
+            const newsCards = $('#newsCards');
+            newsCards.empty();
+            systemData.news.forEach((news, index) => {
+                const cardColor = ['pink', 'sky', 'emerald', 'violet'][index];
+                const card = `
+                    <div class="news-card-${index + 1} rounded-xl p-6 shadow-lg transform hover:scale-105 transition-all duration-300 border-2 border-${cardColor}-300/30">
+                        <div class="flex items-start mb-4">
+                            <div class="bg-${cardColor}-300/40 rounded-full p-3 mr-4 shadow-lg">
+                                <i class="fas fa-${news.icon} text-${cardColor}-100 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white mb-2">${news.title}</h3>
+                                <div class="bg-${cardColor}-300/20 px-3 py-1 rounded-full inline-block">
+                                    <span class="text-${cardColor}-100 text-sm font-semibold">${news.tag}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-white/90 leading-relaxed mb-4">${news.content}</p>
+                        <div class="border-t border-${cardColor}-300/30 pt-3">
+                            <div class="flex items-center text-${cardColor}-200/80 text-sm">
+                                <i class="fas fa-clock mr-2"></i>
+                                <span>ประกาศเมื่อ: ${news.timestamp}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                newsCards.append(card);
+            });
+        }
+
+        // Load Recent Activities
+        function loadRecentActivities() {
+            const activityCards = $('#recentActivityCards');
+            activityCards.empty();
+            systemData.recentActivities.slice(-9).reverse().forEach(activity => {
+                const roomBadgeClass = {
+                    '5/6': 'room-badge-56',
+                    '5/7': 'room-badge-57',
+                    '5/8': 'room-badge-58',
+                    '6/8': 'room-badge-68'
+                }[activity.room] || 'bg-gray-500';
+                const statusClass = {
+                    online: 'status-online',
+                    away: 'status-away',
+                    offline: 'status-offline'
+                }[activity.status] || 'status-offline';
+                const avatarColor = ['#ff6b6b', '#74b9ff', '#a29bfe', '#00b894'][Math.floor(Math.random() * 4)];
+                const card = `
+                    <div class="activity-card rounded-xl p-6 relative">
+                        <div class="status-indicator ${statusClass}"></div>
+                        <div class="flex items-start mb-4">
+                            <div class="activity-avatar mr-4" style="color: ${avatarColor}">${activity.name.charAt(0)}</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-white mb-1">${activity.name}</h4>
+                                <span class="room-badge ${roomBadgeClass}">${activity.room}</span>
+                            </div>
+                        </div>
+                        <p class="text-cyan-200 mb-2"><i class="fas fa-sign-in-alt mr-2"></i>เข้าสู่ระบบ</p>
+                        <p class="text-gray-300 text-sm"><i class="fas fa-clock mr-2"></i>${activity.timestamp}</p>
+                    </div>
+                `;
+                activityCards.append(card);
+            });
+        }
+
+        // Load News to Admin Inputs
+        function loadNewsToAdmin() {
+            systemData.news.forEach((news, index) => {
+                $(`#news${index+1}Title`).val(news.title);
+                $(`#news${index+1}Content`).val(news.content);
+            });
+        }
+
+        // Update News
+        function updateNews(index) {
+            const title = $(`#news${index}Title`).val();
+            const content = $(`#news${index}Content`).val();
+            systemData.news[index-1].title = title;
+            systemData.news[index-1].content = content;
+            systemData.news[index-1].timestamp = new Date().toLocaleString('th-TH', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' น.';
+            saveData();
+            loadNewsToDashboard();
+            Swal.fire({
+                title: 'สำเร็จ!',
+                text: 'อัปเดตข่าวสารแล้ว',
+                icon: 'success',
+                background: 'rgba(0, 0, 0, 0.8)',
+                color: 'white',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+
+        // Login Form Submission
+        $('#loginForm').on('submit', function(e) {
+            e.preventDefault();
+            const userType = $('input[name="userType"]:checked').val();
+            if (userType === 'student') {
+                const password = $('#studentPassword').val();
+                const student = systemData.students.find(s => s.id === password);
+                if (student) {
+                    showStudentModal(student);
+                    addRecentActivity(student);
+                } else {
+                    Swal.fire({
+                        title: 'ข้อผิดพลาด',
+                        text: 'รหัสนักเรียนไม่ถูกต้อง',
+                        icon: 'error',
+                        background: 'rgba(0, 0, 0, 0.8)',
+                        color: 'white'
+                    });
+                }
+            } else {
+                const password = $('#adminPassword').val();
+                if (password === systemData.adminPassword) {
+                    showAdminContent();
+                    addRecentActivity({name: 'Admin', room: 'Admin', status: 'online'});
+                } else {
+                    Swal.fire({
+                        title: 'ข้อผิดพลาด',
+                        text: 'รหัสผ่านไม่ถูกต้อง',
+                        icon: 'error',
+                        background: 'rgba(0, 0, 0, 0.8)',
+                        color: 'white'
+                    });
+                }
+            }
+        });
+
+        // Add Recent Activity
+        function addRecentActivity(user) {
+            systemData.recentActivities.push({
+                name: user.name,
+                room: user.room,
+                timestamp: new Date().toLocaleString('th-TH'),
+                status: 'online'
+            });
+            if (systemData.recentActivities.length > 20) {
+                systemData.recentActivities.shift();
+            }
+            saveData();
+            if ($('#dashboardContent').is(':visible')) {
+                loadRecentActivities();
+            }
+        }
+
+        // ... (remaining original code for other functions like loadDocuments, updateDocumentStatistics, documentUploadForm submission, etc.)
+
+        // Document Upload and Edit
+        $('#documentUploadForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const id = $('#documentId').val();
+            const title = $('#documentTitle').val();
+            const description = $('#documentDescription').val();
+            const subject = $('#documentSubject').val();
+            const type = $('#documentType').val();
+            const file = $('#documentFile')[0].files[0];
+            let selectedRooms = [];
+            if ($('#allRoomsDocument').is(':checked')) {
+                selectedRooms = ['5/6', '5/7', '5/8', '6/8'];
+            } else {
+                selectedRooms = $('input[name="documentRooms"]:checked').map(function() {
+                    return $(this).val();
+                }).get();
+            }
+            
+            if (!title || !subject || !type || selectedRooms.length === 0 || (!id && !file)) {
+                Swal.fire({
+                    title: 'ข้อผิดพลาด',
+                    text: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+                    icon: 'error',
+                    background: 'rgba(0, 0, 0, 0.8)',
+                    color: 'white'
+                });
+                return;
+            }
+            
+            if (!id && (file.type !== 'application/pdf' || file.size > 50 * 1024 * 1024)) {
+                Swal.fire({
+                    title: 'ไฟล์ไม่ถูกต้อง',
+                    text: 'ต้องเป็น PDF และขนาดไม่เกิน 50MB',
+                    icon: 'error',
+                    background: 'rgba(0, 0, 0, 0.8)',
+                    color: 'white'
+                });
+                return;
+            }
+            
+            showLoading();
+            
+            setTimeout(() => {
+                const subjectNames = {
+                    'physics': 'ฟิสิกส์',
+                    'innovation2': 'นวัตกรรม 2',
+                    'innovation3': 'นวัตกรรม 3'
+                };
+                
+                const typeNames = {
+                    'lesson': 'เอกสารประกอบการเรียน',
+                    'exam': 'ข้อสอบ',
+                    'assignment': 'ใบงาน',
+                    'reference': 'เอกสารอ้างอิง'
+                };
+                
+                const timestamp = new Date().toLocaleString('th-TH');
+                
+                let documentData = {
+                    title,
+                    description: description || 'ไม่มีคำอธิบาย',
+                    subject,
+                    subjectName: subjectNames[subject],
+                    type,
+                    typeName: typeNames[type],
+                    rooms: selectedRooms,
+                    uploadDate: timestamp,
+                    downloads: id ? findDocumentById(id).downloads : 0
+                };
+                
+                if (!id) {
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                    documentData.id = Date.now();
+                    documentData.fileName = file.name;
+                    documentData.fileSize = fileSize;
+                    documentData.fileData = 'simulated_base64_data'; // Simulate storage
+                    systemData.documents.push(documentData);
+                } else {
+                    const existingDoc = findDocumentById(parseInt(id));
+                    Object.assign(existingDoc, documentData);
+                    if (file) {
+                        existingDoc.fileName = file.name;
+                        existingDoc.fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                        existingDoc.fileData = 'simulated_updated_base64_data';
+                    }
+                }
+                
+                saveData();
+                $('#documentUploadForm')[0].reset();
+                $('input[name="documentRooms"]').prop('checked', false);
+                $('#allRoomsDocument').prop('checked', false);
+                $('#documentId').val('');
+                $('#submitButtonText').text('อัปโหลดเอกสาร');
+                $('#filePreview').addClass('hidden');
+                $('#fileDropZone').removeClass('hidden');
+                loadAdminDocuments();
+                updateDocumentStatistics();
+                loadDocuments();
+                hideLoading();
+                Swal.fire({
+                    title: id ? 'อัปเดตสำเร็จ!' : 'อัปโหลดสำเร็จ!',
+                    text: 'เอกสารได้รับการจัดการแล้ว',
+                    icon: 'success',
+                    background: 'rgba(0, 0, 0, 0.8)',
+                    color: 'white',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }, 1000);
+        });
+
+        // Edit Document
+        function editDocument(id) {
+            const doc = systemData.documents.find(d => d.id === id);
+            if (doc) {
+                $('#documentId').val(doc.id);
+                $('#documentTitle').val(doc.title);
+                $('#documentDescription').val(doc.description);
+                $('#documentSubject').val(doc.subject);
+                $('#documentType').val(doc.type);
+                doc.rooms.forEach(room => {
+                    $(`input[name="documentRooms"][value="${room}"]`).prop('checked', true);
+                });
+                if (doc.rooms.length === 4) {
+                    $('#allRoomsDocument').prop('checked', true);
+                }
+                $('#submitButtonText').text('อัปเดตเอกสาร');
+                $('#filePreview').removeClass('hidden').find('#fileName').text(doc.fileName);
+                $('#filePreview').find('#fileSize').text(doc.fileSize);
+                $('#fileDropZone').addClass('hidden');
+                $('#documentFile').removeAttr('required');
+            }
+        }
+
+        // Find Document By Id
+        function findDocumentById(id) {
+            return systemData.documents.find(d => d.id === id);
+        }
+
+        // Update Room Chart
+        function updateRoomChart(roomCounts) {
+            const ctx = document.getElementById('roomChart').getContext('2d');
+            if (window.roomChartInstance) {
+                window.roomChartInstance.destroy();
+            }
+            window.roomChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['ห้อง 5/6', 'ห้อง 5/7', 'ห้อง 5/8', 'ห้อง 6/8'],
+                    datasets: [{
+                        data: [roomCounts['5/6'] || 0, roomCounts['5/7'] || 0, roomCounts['5/8'] || 0, roomCounts['6/8'] || 0],
+                        backgroundColor: [
+                            'rgba(255, 107, 107, 0.8)',
+                            'rgba(116, 185, 255, 0.8)',
+                            'rgba(162, 155, 254, 0.8)',
+                            'rgba(0, 184, 148, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: 'white' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update Subject Chart
+        function updateSubjectChart(subjectCounts) {
+            const ctx = document.getElementById('subjectChart').getContext('2d');
+            if (window.subjectChartInstance) {
+                window.subjectChartInstance.destroy();
+            }
+            window.subjectChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['ฟิสิกส์', 'นวัตกรรม 2', 'นวัตกรรม 3'],
+                    datasets: [{
+                        data: [subjectCounts.physics, subjectCounts.innovation2, subjectCounts.innovation3],
+                        backgroundColor: [
+                            'rgba(255, 107, 107, 0.8)',
+                            'rgba(116, 185, 255, 0.8)',
+                            'rgba(162, 155, 254, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: 'white' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize Charts (empty initially)
+        function initCharts() {
+            updateRoomChart({});
+            updateSubjectChart({});
+        }
+
+        // Navigation Tabs
+        $('.space-nav button').on('click', function() {
+            $('.space-nav button').removeClass('tab-active').addClass('text-gray-300 hover:text-cyan-300');
+            $(this).addClass('tab-active').removeClass('text-gray-300 hover:text-cyan-300');
+            const tab = $(this).attr('id').replace('Tab', 'Content');
+            $('.container > div[id$="Content"]').hide();
+            $(`#${tab}`).show();
+            if (tab === 'dashboardContent') {
+                updateDashboard();
+            }
+        });
+
+        // Admin Tabs
+        $('.admin-tab').on('click', function() {
+            $('.admin-tab').removeClass('admin-tab-active border-cyan-400 text-cyan-400').addClass('text-gray-300 hover:text-cyan-300');
+            $(this).addClass('admin-tab-active border-cyan-400 text-cyan-400').removeClass('text-gray-300 hover:text-cyan-300');
+            const tab = $(this).data('tab');
+            $('.admin-content').hide();
+            $(`#${tab}Tab`).show();
+            if (tab === 'documents') {
+                loadAdminDocuments();
+                updateDocumentStatistics();
+            } else if (tab === 'news') {
+                loadNewsToAdmin();
+            }
+        });
+
+        // Generate Stars
+        function generateStars() {
+            const starsContainer = $('#stars');
+            for (let i = 0; i < 200; i++) {
+                const star = $('<div class="star">');
+                star.css({
+                    left: Math.random() * 100 + '%',
+                    top: Math.random() * 100 + '%',
+                    width: Math.random() * 2 + 1 + 'px',
+                    height: Math.random() * 2 + 1 + 'px',
+                    opacity: Math.random() * 0.5 + 0.3
+                });
+                starsContainer.append(star);
+            }
+        }
+
+        // Update Date Time
+        function updateDateTime() {
+            const now = new Date();
+            $('#currentDateTime').text(now.toLocaleString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' น.');
+        }
+
+        // Save to Firebase
+        async function saveDataToFirebase() {
+            await db.collection('systemData').doc('main').set(systemData);
+        }
+
+        // Load from Firebase
+        async function loadDataFromFirebase() {
+            const doc = await db.collection('systemData').doc('main').get();
+            if (doc.exists) {
+                systemData = { ...systemData, ...doc.data() };
+            }
+        }
+
+        // Student Modal
+        function showStudentModal(student) {
+            $('#studentInfo').html(`
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">ข้อมูลส่วนตัว</h3>
+                    <p><strong>รหัส:</strong> ${student.id}</p>
+                    <p><strong>ชื่อ:</strong> ${student.name}</p>
+                    <p><strong>ห้อง:</strong> ${student.room}</p>
+                </div>
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">คะแนน</h3>
+                    <p><strong>ภาระงาน:</strong> ${student.homework || 0}</p>
+                    <p><strong>สอบ:</strong> ${student.examScore || 0}</p>
+                    <p><strong>ชิ้นงาน:</strong> ${student.projectScore || 0}</p>
+                </div>
+            `);
+            $('#studentModal').addClass('flex').removeClass('hidden');
+        }
+
+        // Close Student Modal
+        $('#closeStudentModal').on('click', function() {
+            $('#studentModal').addClass('hidden').removeClass('flex');
+        });
+
+        // Student Logout
+        $('#studentLogoutBtn').on('click', function() {
+            $('#studentModal').addClass('hidden').removeClass('flex');
+            Swal.fire({
+                title: 'ออกจากระบบสำเร็จ',
+                icon: 'success',
+                background: 'rgba(0, 0, 0, 0.8)',
+                color: 'white',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        });
+
+        // Show Admin Content
+        function showAdminContent() {
+            $('#loginContent').hide();
+            $('#adminContent').show();
+            $('.admin-tab:first').click();
+        }
+
+        // Back to Dashboard from Admin
+        $('#backToDashboard').on('click', function() {
+            $('#adminContent').hide();
+            $('#dashboardTab').click();
+        });
+
+        // Logout from Admin
+        $('#logoutBtn').on('click', function() {
+            $('#adminContent').hide();
+            $('#dashboardTab').click();
+            Swal.fire({
+                title: 'ออกจากระบบสำเร็จ',
+                icon: 'success',
+                background: 'rgba(0, 0, 0, 0.8)',
+                color: 'white',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        });
+
+        // User Type Change
+        $('input[name="userType"]').on('change', function() {
+            if ($(this).val() === 'student') {
+                $('#studentLogin').show();
+                $('#adminLogin').hide();
+            } else {
+                $('#studentLogin').hide();
+                $('#adminLogin').show();
+            }
+        });
+
+        // Add Single Student
+        $('#addSingleStudentBtn').on('click', function() {
+            Swal.fire({
+                title: 'เพิ่มนักเรียน',
+                html: `
+                    <input id="swal-student-id" class="swal2-input" placeholder="รหัสนักเรียน">
+                    <input id="swal-student-number" class="swal2-input" placeholder="เลขที่">
+                    <input id="swal-student-name" class="swal2-input" placeholder="ชื่อ-สกุล">
+                    <select id="swal-student-room" class="swal2-input">
+                        <option value="">เลือกห้อง</option>
+                        <option value="5/6">5/6</option>
+                        <option value="5/7">5/7</option>
+                        <option value="5/8">5/8</option>
+                        <option value="6/8">6/8</option>
+                    </select>
+                `,
+                focusConfirm: false,
+                preConfirm: () => {
+                    const id = $('#swal-student-id').val();
+                    const number = $('#swal-student-number').val();
+                    const name = $('#swal-student-name').val();
+                    const room = $('#swal-student-room').val();
+                    if (!id || !name || !room) {
+                        Swal.showValidationMessage('กรุณากรอกข้อมูลให้ครบ');
+                        return;
+                    }
+                    return { id, number, name, room, homework: 0, examScore: 0, projectScore: 0 };
+                },
+                background: 'rgba(0, 0, 0, 0.8)',
+                color: 'white'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    systemData.students.push(result.value);
+                    saveData();
+                    loadStudentsTable();
+                    updateDashboard();
+                    Swal.fire({
+                        title: 'เพิ่มสำเร็จ!',
+                        icon: 'success',
+                        background: 'rgba(0, 0, 0, 0.8)',
+                        color: 'white',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        });
+
+        // Load Students Table
+        function loadStudentsTable() {
+            const table = $('#studentsTable');
+            table.empty();
+            systemData.students.forEach(student => {
+                table.append(`
+                    <tr>
+                        <td class="border border-white/20 px-4 py-2 text-white">${student.id}</td>
+                        <td class="border border-white/20 px-4 py-2 text-white">${student.number || '-'}</td>
+                        <td class="border border-white/20 px-4 py-2 text-white">${student.name}</td>
+                        <td class="border border-white/20 px-4 py-2 text-white">${student.room}</td>
+                        <td class="border border-white/20 px-4 py-2">
+                            <button onclick="deleteStudent('${student.id}')" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors">
+                                <i class="fas fa-trash"></i> ลบ
+                            </button>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        // Delete Student
+        function deleteStudent(id) {
+            Swal.fire({
+                title: 'ยืนยันการลบ',
+                text: 'คุณต้องการลบนยกเรียนคนนี้หรือไม่?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก',
+                background: 'rgba(0, 0, 0, 0.8)',
+                color: 'white'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    systemData.students = systemData.students.filter(s => s.id !== id);
+                    saveData();
+                    loadStudentsTable();
+                    updateDashboard();
+                    Swal.fire({
+                        title: 'ลบสำเร็จ!',
+                        icon: 'success',
+                        background: 'rgba(0, 0, 0, 0.8)',
+                        color: 'white',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+        // Add Multiple Students
+        $('#addMultipleStudentsBtn').on('click', function() {
+            Swal.fire({
+                title: 'เพิ่มนักเรียนหลายคน',
+                html: '<textarea id="swal-multiple-students" class="swal2-textarea" placeholder="รหัส,เลขที่,ชื่อ-สกุล,ห้อง (คั่นด้วยcomma, 1บรรทัดต่อคน)"></textarea>',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const input = $('#swal-multiple-students').val().trim();
+                    if (!input) return;
+                    const lines = input.split('\n');
+                    const newStudents = [];
+                    lines.forEach(line => {
+                        const [id, number, name, room] = line.split(',').map(s => s.trim());
+                        if (id && name && room) {
+                            newStudents.push({ id, number, name, room, homework: 0, examScore: 0, projectScore: 0 });
+                        }
+                    });
+                    return newStudents;
+                },
+                background: 'rgba(0, 0, 0, 0.8)',
+                color: 'white'
+            }).then((result) => {
+                if (result.isConfirmed && result.value.length > 0) {
+                    systemData.students.push(...result.value);
+                    saveData();
+                    loadStudentsTable();
+                    updateDashboard();
+                    Swal.fire({
+                        title: 'เพิ่มสำเร็จ!',
+                        text: `เพิ่ม ${result.value.length} คน`,
+                        icon: 'success',
+                        background: 'rgba(0, 0, 0, 0.8)',
+                        color: 'white',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        });
+
+        // Import from Excel
+        $('#importExcelBtn').on('click', function() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xlsx, .xls';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = event => {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const json = XLSX.utils.sheet_to_json(sheet);
+                    const newStudents = json.map(row => ({
+                        id: row['รหัสนักเรียน'].toString(),
+                        number: row['เลขที่'] ? row['เลขที่'].toString() : '',
+                        name: row['ชื่อ-สกุล'],
+                        room: row['ห้องเรียน'],
+                        homework: 0,
+                        examScore: 0,
+                        projectScore: 0
+                    }));
+                    systemData.students.push(...newStudents);
+                    saveData();
+                    loadStudentsTable();
+                    updateDashboard();
+                    Swal.fire({
+                        title: 'นำเข้าสำเร็จ!',
+                        text: `เพิ่ม ${newStudents.length} คน`,
+                        icon: 'success',
+                        background: 'rgba(0, 0, 0, 0.8)',
+                        color: 'white',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+            };
+            input.click();
+        });
+
+        // Sync Firebase
+        $('#syncFirebaseBtn').on('click', async function() {
+            showLoading();
+            try {
+                await saveDataToFirebase();
+                await loadDataFromFirebase();
+                loadStudentsTable();
+                updateDashboard();
+                Swal.fire({
+                    title: 'ซิงค์สำเร็จ!',
+                    icon: 'success',
+                    background: 'rgba(0, 0, 0, 0.8)',
+                    color: 'white',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } catch (error) {
+                Swal.fire({
+                    title: 'ข้อผิดพลาด',
+                    text: 'ไม่สามารถซิงค์กับ Firebase',
+                    icon: 'error',
+                    background: 'rgba(0, 0, 0, 0.8)',
+                    color: 'white'
+                });
+            }
+            hideLoading();
+        });
+
+        // Assignment Type Change for Pass Score
+        $('#assignmentMaxScore').on('change', function() {
+            const maxScore = parseInt($(this).val()) || 0;
+            if (maxScore > 0) {
+                $('#passScoreGroup').show();
+            } else {
+                $('#passScoreGroup').hide();
+            }
+        });
+
+        // Initialize
+        $(document).ready(function() {
+            generateStars();
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            initCharts();
+            testFirebaseConnection();
+            loadData();
+            loadStudentsTable();
+        });
+    </script>
+</html>
